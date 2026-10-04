@@ -2,7 +2,7 @@
 
 Type a product or topic, and Pain Point Radar reads recent public discussion and app reviews about it, pulls out real user complaints with Claude, and groups them into ranked themes backed by verbatim, linked quotes.
 
-It runs entirely in the browser. There is no backend: you bring your own Anthropic API key, and it never leaves your tab except to call the Anthropic API.
+It runs in the browser. Anyone can try a small run (up to 50 posts) for free; with your own Anthropic API key you can read up to 500, and the key never leaves your tab except to call the Anthropic API.
 
 **Live demo:** [pain-point-radar-delta.vercel.app](https://pain-point-radar-delta.vercel.app/)
 
@@ -22,7 +22,7 @@ Before any money is spent, the app shows how many posts it found from each sourc
 
 ## Design decisions
 
-**No backend.** A server would mean holding other people's API keys. Keeping everything in the browser removes that risk entirely and makes the app free to host as a static site.
+**Almost no backend.** A server that holds other people's API keys is a liability, so when you bring your own key everything runs in your browser and the key goes straight to Anthropic. The one exception is a free demo for visitors without a key: a single Vercel Function forwards their run to the Anthropic API on the owner's key. To keep that from becoming a free Claude for the internet, it only accepts this app's two exact requests (fixed system prompt and model, capped prompt size and output tokens), only from this site, with per-visitor and daily call limits. The real ceiling is a monthly spend limit on the key's Anthropic workspace, because in-memory limits on a serverless function are best effort.
 
 **Sources, and why not Reddit.** Every source has to be readable straight from a browser: free, no key, and served with CORS headers. Five pass that test today:
 

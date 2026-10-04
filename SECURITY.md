@@ -1,6 +1,6 @@
 # Security
 
-Pain Point Radar is a static site with no backend. Users paste their own Anthropic API key, and the app processes text written by strangers on the internet. This document lists what could go wrong and what the app does about it.
+Pain Point Radar is a static site plus one serverless function for the free demo. Users either paste their own Anthropic API key or use the demo, which runs on the owner's key, and the app processes text written by strangers on the internet. This document lists what could go wrong and what the app does about it.
 
 ## Threat model
 
@@ -11,6 +11,7 @@ Pain Point Radar is a static site with no backend. Users paste their own Anthrop
 | Prompt injection from posts | Post text is wrapped in `<untrusted>` tags and the system prompt tells the model to treat it strictly as data. The model's output is validated against a zod schema, and it can only influence theme wording and severity, never links or counts. |
 | Invented quotes | Every quote is checked against the source item's text before it can appear in a report. |
 | XSS from external content | All external text is rendered by React as text, never as HTML. Only `https` links are rendered, and they open with `rel="noopener noreferrer nofollow"`. Markdown export escapes Markdown syntax in external text. |
+| Demo key abuse | The owner's key lives only in a Vercel environment variable. `api/claude.ts` forwards only the app's two requests (exact system prompt and model pair, prompt at most 40,000 characters, at most 4,000 output tokens), refuses cross-site calls, and limits calls per visitor per hour and per day. Demo runs are capped at 50 posts. Anthropic error bodies are never passed back. These limits are per server instance, so the hard ceiling is a monthly spend limit on the Anthropic workspace that owns the key. |
 | Surprise bills | The app shows the number of posts and an estimated cost before any API call and waits for the user to confirm. Posts per run are capped at 500. |
 | Clickjacking | `X-Frame-Options: DENY` is set by the hosting config (`vercel.json`). |
 | Vulnerable dependencies | Few runtime dependencies (React, zod, bundled fonts). CI runs `npm audit` and Dependabot opens update PRs weekly. |
@@ -19,6 +20,7 @@ Pain Point Radar is a static site with no backend. Users paste their own Anthrop
 ## Known limitations
 
 - Calling the Anthropic API from a browser requires the `anthropic-dangerous-direct-browser-access` header. This is acceptable here because each user supplies and controls their own key, but a malicious browser extension on the user's machine could still read it.
+- Someone could script the demo endpoint with a spoofed Origin header. They would still get only pain-point extraction or clustering of text they send, within the rate limits, and the workspace spend limit caps the damage.
 - The cost estimate is approximate and based on list prices in `src/pipeline/config.ts`.
 
 ## Reporting a problem

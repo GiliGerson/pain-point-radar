@@ -5,6 +5,8 @@ import { ReportSchema } from "./types";
 import { analyze, type Progress } from "./pipeline/analyze";
 import { estimateCost, type CostEstimate } from "./pipeline/cost";
 import { createAnthropicClient } from "./llm/anthropic";
+import { createDemoClient } from "./llm/demo";
+import { DEMO_MAX_ITEMS } from "./pipeline/config";
 import { ReportView } from "./components/ReportView";
 
 type Phase =
@@ -32,6 +34,8 @@ export default function App() {
   const chosen = SOURCES.filter((s) => s.enabled && selected.includes(s.id));
   const chosenLabel = chosen.map((s) => s.label).join(", ");
   const busy = phase.kind === "fetching" || phase.kind === "analyzing";
+  // Without a key, runs go through the free demo on the owner's key, capped at DEMO_MAX_ITEMS.
+  const demo = !apiKey.trim();
 
   useEffect(() => {
     fetch("/demo-report.json")
@@ -52,7 +56,12 @@ export default function App() {
     abortRef.current = new AbortController();
     setPhase({ kind: "fetching" });
     try {
-      const { items, failures } = await searchSources(chosen, { topic: t, days, maxItems, signal: abortRef.current.signal });
+      const { items, failures } = await searchSources(chosen, {
+        topic: t,
+        days,
+        maxItems: demo ? Math.min(maxItems, DEMO_MAX_ITEMS) : maxItems,
+        signal: abortRef.current.signal,
+      });
       if (items.length === 0) {
         setPhase({ kind: "error", message: `Nothing on ${chosenLabel} mentions "${t}" in the last ${days} days. Try a broader topic, more sources or a longer range.` });
         return;
@@ -63,8 +72,9 @@ export default function App() {
     }
   }
 
-  async function runAnalysis(items: Item[]) {
-    if (!apiKey.trim()) return;
+  async function runAnalysis(found: Item[]) {
+    // A search made with a key can be larger than the demo allows.
+    const items = demo ? found.slice(0, DEMO_MAX_ITEMS) : found;
     abortRef.current = new AbortController();
     setPhase({ kind: "analyzing", progress: null });
     try {
@@ -73,7 +83,7 @@ export default function App() {
         days,
         sources: [...new Set(items.map((it) => it.source))].map(sourceLabel),
         items,
-        llm: createAnthropicClient(apiKey.trim()),
+        llm: demo ? createDemoClient() : createAnthropicClient(apiKey.trim()),
         signal: abortRef.current.signal,
         onProgress: (progress) => setPhase({ kind: "analyzing", progress }),
       });
@@ -190,8 +200,8 @@ export default function App() {
               )}
             </div>
             <p className="hint">
-              Sent only to api.anthropic.com. Kept in memory, gone when you close the tab. Get one at
-              console.anthropic.com.
+              Optional. Without a key you get a free demo run of up to {DEMO_MAX_ITEMS} posts. With your own key you
+              can read up to 500; it is sent only to api.anthropic.com, kept in memory, and gone when you close the tab.
             </p>
           </div>
 
@@ -232,10 +242,17 @@ function Status(props: {
       <section className="status" aria-live="polite">
         <p>
           Found {items.length} posts, comments and reviews ({breakdown}). Analyzing them takes {estimate.calls} AI
-          calls and should cost about <strong>${Math.max(estimate.usd, 0.01).toFixed(2)}</strong> on your API key.
+          calls
+          {props.hasKey ? (
+            <>
+              {" "}and should cost about <strong>${Math.max(estimate.usd, 0.01).toFixed(2)}</strong> on your API key.
+            </>
+          ) : (
+            <>, free for you: this runs on the demo key.</>
+          )}
         </p>
         <div className="status-actions">
-          <button type="button" className="btn-primary" disabled={!props.hasKey} onClick={() => props.onRun(items)}>
+          <button type="button" className="btn-primary" onClick={() => props.onRun(items)}>
             Analyze {items.length} posts
           </button>
           <button type="button" className="btn-quiet" onClick={props.onCancel}>
@@ -247,7 +264,6 @@ function Status(props: {
             Skipped {f.label}: {f.message}
           </p>
         ))}
-        {!props.hasKey && <p className="hint">Add your API key above to analyze.</p>}
       </section>
     );
   }
