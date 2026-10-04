@@ -6,7 +6,7 @@ It runs entirely in the browser. There is no backend: you bring your own Anthrop
 
 **Live demo:** [pain-point-radar-delta.vercel.app](https://pain-point-radar-delta.vercel.app/)
 
-<!-- After your first real run, save a screenshot as docs/screenshot.png and replace this line with: ![Screenshot](docs/screenshot.png) -->
+![Pain Point Radar: pick a product or topic, a time range and sources, then run it with your own Anthropic API key](docs/screenshot.png)
 
 ## How it works
 
