@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { SOURCES } from "./sources";
+import { SOURCES, searchSources, sourceLabel } from "./sources";
 import type { Item, Report } from "./types";
 import { ReportSchema } from "./types";
 import { analyze, type Progress } from "./pipeline/analyze";
@@ -10,12 +10,12 @@ import { ReportView } from "./components/ReportView";
 type Phase =
   | { kind: "idle" }
   | { kind: "fetching" }
-  | { kind: "ready"; items: Item[]; estimate: CostEstimate }
+  | { kind: "ready"; items: Item[]; estimate: CostEstimate; failures: { label: string; message: string }[] }
   | { kind: "analyzing"; progress: Progress | null }
   | { kind: "error"; message: string };
 
 const DAY_OPTIONS = [7, 30, 90, 365];
-const ITEM_OPTIONS = [50, 100, 200];
+const ITEM_OPTIONS = [50, 100, 200, 500];
 
 export default function App() {
   const [topic, setTopic] = useState("");
@@ -28,7 +28,9 @@ export default function App() {
   const [isSample, setIsSample] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  const source = SOURCES.find((s) => s.enabled)!;
+  const [selected, setSelected] = useState<string[]>(() => SOURCES.filter((s) => s.enabled).map((s) => s.id));
+  const chosen = SOURCES.filter((s) => s.enabled && selected.includes(s.id));
+  const chosenLabel = chosen.map((s) => s.label).join(", ");
   const busy = phase.kind === "fetching" || phase.kind === "analyzing";
 
   useEffect(() => {
@@ -50,12 +52,12 @@ export default function App() {
     abortRef.current = new AbortController();
     setPhase({ kind: "fetching" });
     try {
-      const items = await source.search({ topic: t, days, maxItems, signal: abortRef.current.signal });
+      const { items, failures } = await searchSources(chosen, { topic: t, days, maxItems, signal: abortRef.current.signal });
       if (items.length === 0) {
-        setPhase({ kind: "error", message: `Nothing on ${source.label} mentions "${t}" in the last ${days} days. Try a broader topic or a longer range.` });
+        setPhase({ kind: "error", message: `Nothing on ${chosenLabel} mentions "${t}" in the last ${days} days. Try a broader topic, more sources or a longer range.` });
         return;
       }
-      setPhase({ kind: "ready", items, estimate: estimateCost(items) });
+      setPhase({ kind: "ready", items, estimate: estimateCost(items), failures });
     } catch (e) {
       if (!abortRef.current.signal.aborted) setPhase({ kind: "error", message: errorText(e) });
     }
@@ -69,7 +71,7 @@ export default function App() {
       const result = await analyze({
         topic: topic.trim(),
         days,
-        sources: [source.label],
+        sources: [...new Set(items.map((it) => it.source))].map(sourceLabel),
         items,
         llm: createAnthropicClient(apiKey.trim()),
         signal: abortRef.current.signal,
@@ -124,7 +126,7 @@ export default function App() {
           </label>
 
           <p className="ask-intro">
-            Reads recent public discussion on {source.label}, pulls out real complaints with an AI model, and groups
+            Reads recent public discussion and app reviews, pulls out real complaints with an AI model, and groups
             them into themes with the original quotes. Runs in your browser with your own Anthropic API key.
           </p>
 
@@ -153,7 +155,14 @@ export default function App() {
               <legend>Sources</legend>
               {SOURCES.map((s) => (
                 <label key={s.id} className={s.enabled ? "" : "is-disabled"}>
-                  <input type="checkbox" checked={s.enabled} disabled readOnly />
+                  <input
+                    type="checkbox"
+                    checked={s.enabled && selected.includes(s.id)}
+                    disabled={!s.enabled || busy}
+                    onChange={(e) =>
+                      setSelected((cur) => (e.target.checked ? [...cur, s.id] : cur.filter((id) => id !== s.id)))
+                    }
+                  />
                   {s.label}
                   {!s.enabled && <span className="hint"> ({s.disabledReason})</span>}
                 </label>
@@ -187,13 +196,13 @@ export default function App() {
           </div>
 
           {phase.kind !== "ready" && (
-            <button type="submit" className="btn-primary" disabled={busy || !topic.trim()}>
+            <button type="submit" className="btn-primary" disabled={busy || !topic.trim() || chosen.length === 0}>
               {phase.kind === "fetching" ? "Finding posts…" : "Find posts"}
             </button>
           )}
         </form>
 
-        <Status phase={phase} hasKey={!!apiKey.trim()} onRun={runAnalysis} onCancel={cancel} sourceLabel={source.label} />
+        <Status phase={phase} hasKey={!!apiKey.trim()} onRun={runAnalysis} onCancel={cancel} sourceLabel={chosenLabel} />
 
         {report && phase.kind !== "analyzing" && <ReportView report={report} isSample={isSample} />}
       </main>
@@ -215,11 +224,14 @@ function Status(props: {
   const { phase } = props;
 
   if (phase.kind === "ready") {
-    const { items, estimate } = phase;
+    const { items, estimate, failures } = phase;
+    const counts = new Map<string, number>();
+    for (const it of items) counts.set(it.source, (counts.get(it.source) ?? 0) + 1);
+    const breakdown = [...counts].map(([id, n]) => `${n} from ${sourceLabel(id)}`).join(", ");
     return (
       <section className="status" aria-live="polite">
         <p>
-          Found {items.length} posts and comments on {props.sourceLabel}. Analyzing them takes {estimate.calls} AI
+          Found {items.length} posts, comments and reviews ({breakdown}). Analyzing them takes {estimate.calls} AI
           calls and should cost about <strong>${Math.max(estimate.usd, 0.01).toFixed(2)}</strong> on your API key.
         </p>
         <div className="status-actions">
@@ -230,6 +242,11 @@ function Status(props: {
             Start over
           </button>
         </div>
+        {failures.map((f) => (
+          <p key={f.label} className="hint">
+            Skipped {f.label}: {f.message}
+          </p>
+        ))}
         {!props.hasKey && <p className="hint">Add your API key above to analyze.</p>}
       </section>
     );

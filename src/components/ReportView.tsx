@@ -1,6 +1,7 @@
 import type { Report } from "../types";
 import { RadarGlyph } from "./RadarGlyph";
 import { safeHttpsUrl } from "../lib/text";
+import { sourceLabel } from "../sources";
 import { downloadFile, printReport, reportToMarkdown, slugify } from "../lib/export";
 
 interface Props {
@@ -24,7 +25,7 @@ export function ReportView({ report, isSample }: Props) {
         <h2 id="report-title">What people struggle with in {report.topic}</h2>
         <p className="report-meta">
           {report.themes.length} {report.themes.length === 1 ? "theme" : "themes"} from {report.itemsAnalyzed} posts and comments on{" "}
-          {report.sources.join(" and ")} over the last {report.days} days, generated {date}.
+          {report.sources.join(", ")} over the last {report.days} days, generated {date}.
         </p>
         <div className="report-actions">
           <button type="button" className="btn-quiet" onClick={() => downloadFile(`${base}.md`, reportToMarkdown(report), "text/markdown")}>
@@ -67,7 +68,7 @@ export function ReportView({ report, isSample }: Props) {
                           <blockquote>{q.text}</blockquote>
                           {href && (
                             <a href={href} target="_blank" rel="noopener noreferrer nofollow">
-                              {q.author} on Hacker News
+                              {q.author} on {sourceLabel(q.source ?? "hackernews")}
                             </a>
                           )}
                         </li>

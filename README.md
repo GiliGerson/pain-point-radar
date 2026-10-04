@@ -1,6 +1,6 @@
 # Pain Point Radar
 
-Type a product or topic, and Pain Point Radar reads recent public discussion about it, pulls out real user complaints with Claude, and groups them into ranked themes backed by verbatim, linked quotes.
+Type a product or topic, and Pain Point Radar reads recent public discussion and app reviews about it, pulls out real user complaints with Claude, and groups them into ranked themes backed by verbatim, linked quotes.
 
 It runs entirely in the browser. There is no backend: you bring your own Anthropic API key, and it never leaves your tab except to call the Anthropic API.
 
@@ -12,19 +12,29 @@ It runs entirely in the browser. There is no backend: you bring your own Anthrop
 
 ![Architecture](docs/architecture.svg)
 
-1. **Collect.** A source adapter searches public discussion for the topic in the chosen time range and normalizes every post and comment into one `Item` shape. Hacker News (through the Algolia search API) is live today.
+1. **Collect.** Each selected source adapter searches for the topic in the chosen time range and normalizes every post, issue and review into one `Item` shape. The sources are searched in parallel and interleaved up to the post limit (50 to 500), so one busy source cannot crowd out the others, and a source that fails is skipped with a note instead of failing the run.
 2. **Extract.** Items go to Claude Haiku 4.5 in batches of 15, three batches at a time. For each item the model returns the pain points it describes, each with a verbatim quote.
 3. **Verify.** Every quote is checked against the original text. A quote that does not appear in its source item is dropped, so the report cannot show a quote the model made up.
 4. **Cluster.** All verified pain points go to Claude Sonnet 5.5 in a single call, which groups them into 3 to 8 themes and rates severity from 1 to 5.
 5. **Report.** Mention counts and quotes are computed in code from the real data, not taken from the model. Themes are ranked by severity times mentions and can be exported as Markdown, JSON or PDF (through the browser's print dialog, so no PDF library is bundled).
 
-Before any money is spent, the app shows how many posts it found and an estimated cost, and waits for you to confirm.
+Before any money is spent, the app shows how many posts it found from each source and an estimated cost, and waits for you to confirm.
 
 ## Design decisions
 
 **No backend.** A server would mean holding other people's API keys. Keeping everything in the browser removes that risk entirely and makes the app free to host as a static site.
 
-**Why Hacker News and not Reddit.** The original version of this tool read Reddit. In late 2025 Reddit closed self-serve API access for new developers, and in 2026 it shut the unauthenticated JSON endpoints. Instead of scraping around that, the app has a `SourceAdapter` interface: Hacker News is the live source, and a Reddit adapter is already registered but disabled until official API access is approved. Adding a source means writing one file.
+**Sources, and why not Reddit.** Every source has to be readable straight from a browser: free, no key, and served with CORS headers. Five pass that test today:
+
+| Source | What it adds | Limit worth knowing |
+| --- | --- | --- |
+| Hacker News (Algolia) | Developer and founder discussion, ranked by relevance | Common words match other senses ("the notion of"), which the extraction prompt filters out |
+| App Store reviews | End-user complaints with a star rating | Only products with an iPhone app whose name contains the topic; Apple serves the latest 500 reviews |
+| Bluesky | Public social posts, closest to Twitter or Reddit | One page of 100 posts without signing in |
+| GitHub Issues | Bugs and feature requests on developer tools | 10 searches a minute without a token, so 3 pages per run |
+| Stack Overflow | Developers stuck on a tool or API | Traffic has dropped sharply, so recent results are sparse |
+
+The original version of this tool read Reddit. In late 2025 Reddit closed self-serve API access for new developers, and in 2026 it shut the unauthenticated JSON endpoints (they now answer 403). Instead of scraping around that, the Reddit adapter is registered but disabled until official API access is approved. Adding a source means writing one `SourceAdapter` file and adding its host to the CSP.
 
 **Two models.** Extraction runs many times on small inputs, so it uses the fast, cheap model. Clustering runs once and needs judgment across everything, so it gets the stronger one.
 
@@ -32,7 +42,7 @@ Before any money is spent, the app shows how many posts it found and an estimate
 
 ## Security
 
-The full threat model is in [SECURITY.md](SECURITY.md). In short: the API key lives in memory only, a production Content-Security-Policy allows network calls to exactly two hosts, external text is always rendered as plain text, only `https` links are rendered, and post content is passed to the model inside `<untrusted>` tags with instructions to treat it as data.
+The full threat model is in [SECURITY.md](SECURITY.md). In short: the API key lives in memory only, a production Content-Security-Policy allows network calls only to the Anthropic API and the five source APIs, external text is always rendered as plain text, only `https` links are rendered, and post content is passed to the model inside `<untrusted>` tags with instructions to treat it as data.
 
 ## Run it locally
 
@@ -60,7 +70,7 @@ If `public/demo-report.json` exists, the app shows it on first visit, so people 
 
 ```
 src/
-  sources/     SourceAdapter interface, Hacker News adapter, disabled Reddit adapter
+  sources/     SourceAdapter interface, one adapter per source, parallel search
   llm/         Anthropic browser client and a mock used in tests
   pipeline/    prompts, extraction, quote verification, clustering, cost estimate
   components/  report view and the severity glyph
@@ -72,7 +82,7 @@ src/
 - Evals: a hand-labelled set of 20 to 30 items to measure extraction quality in CI
 - Watch mode: re-run on a schedule and highlight only new complaints
 - Reddit adapter on the official API, once access is approved
-- More sources (GitHub issues, app store reviews)
+- Google Play reviews (needs a small proxy, since Google serves no CORS API)
 
 ## License
 

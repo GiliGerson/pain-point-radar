@@ -25,6 +25,8 @@ export const QuoteSchema = z.object({
   text: z.string(),
   url: z.string(),
   author: z.string(),
+  /** Source id, such as "hackernews". Missing in reports made before there were several sources. */
+  source: z.string().optional(),
 });
 export type Quote = z.infer<typeof QuoteSchema>;
 

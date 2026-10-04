@@ -131,7 +131,7 @@ export async function clusterPainPoints(
       const url = item && safeHttpsUrl(item.url);
       if (!item || !url) continue;
       quotedItems.add(m.itemId);
-      quotes.push({ text: m.quote, url, author: item.author });
+      quotes.push({ text: m.quote, url, author: item.author, source: item.source });
     }
 
     themes.push({ title: t.title.trim(), summary: t.summary.trim(), severity: t.severity, mentions: itemIds.size, quotes });

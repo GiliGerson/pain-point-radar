@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 /**
  * Production-only Content-Security-Policy.
- * The app may talk to exactly two outside hosts. Everything else is blocked,
+ * The app may talk to the Anthropic API and the source APIs listed below, nothing else. Everything else is blocked,
  * so even a compromised dependency cannot send data somewhere new.
  */
 const CSP = [
@@ -12,7 +12,15 @@ const CSP = [
   "style-src 'self'",
   "font-src 'self'",
   "img-src 'self' data:",
-  "connect-src 'self' https://hn.algolia.com https://api.anthropic.com",
+  [
+    "connect-src 'self'",
+    "https://api.anthropic.com",
+    "https://hn.algolia.com",
+    "https://itunes.apple.com",
+    "https://api.bsky.app",
+    "https://api.github.com",
+    "https://api.stackexchange.com",
+  ].join(" "),
   "object-src 'none'",
   "base-uri 'none'",
   "form-action 'none'",
