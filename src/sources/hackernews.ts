@@ -3,7 +3,9 @@ import type { Item, SearchOptions } from "../types";
 import type { SourceAdapter } from "./types";
 import { htmlToText } from "../lib/text";
 
-const API = "https://hn.algolia.com/api/v1/search_by_date";
+// Relevance-ranked, not newest-first: for a common word like "notion", the newest
+// 50 hits were almost all other senses of the word; the most relevant 50 were mostly about the product.
+const API = "https://hn.algolia.com/api/v1/search";
 const PAGE_SIZE = 100;
 const MIN_TEXT_LENGTH = 40;
 

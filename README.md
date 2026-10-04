@@ -16,7 +16,7 @@ It runs entirely in the browser. There is no backend: you bring your own Anthrop
 2. **Extract.** Items go to Claude Haiku 4.5 in batches of 15, three batches at a time. For each item the model returns the pain points it describes, each with a verbatim quote.
 3. **Verify.** Every quote is checked against the original text. A quote that does not appear in its source item is dropped, so the report cannot show a quote the model made up.
 4. **Cluster.** All verified pain points go to Claude Sonnet 5.5 in a single call, which groups them into 3 to 8 themes and rates severity from 1 to 5.
-5. **Report.** Mention counts and quotes are computed in code from the real data, not taken from the model. Themes are ranked by severity times mentions and can be exported as Markdown or JSON.
+5. **Report.** Mention counts and quotes are computed in code from the real data, not taken from the model. Themes are ranked by severity times mentions and can be exported as Markdown, JSON or PDF (through the browser's print dialog, so no PDF library is bundled).
 
 Before any money is spent, the app shows how many posts it found and an estimated cost, and waits for you to confirm.
 

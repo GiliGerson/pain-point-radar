@@ -391,3 +391,59 @@ button:disabled {
     height: 40px;
   }
 }
+
+/* PDF export: "Download PDF" opens the print dialog, and this lays out the report alone. */
+.print-only {
+  display: none;
+}
+@media print {
+  :root {
+    --fog: #ffffff;
+    --paper: #ffffff;
+    --ink: #18302d;
+    --muted: #586b67;
+    --line: #c6d1cd;
+    --signal: #d9822b;
+    --signal-soft: #f2dcc3;
+    color-scheme: light;
+  }
+  @page {
+    margin: 18mm 16mm;
+  }
+  html {
+    font-size: 11pt;
+  }
+  .masthead,
+  .ask,
+  .status,
+  .foot,
+  .report-actions,
+  .sample-note {
+    display: none !important;
+  }
+  .page {
+    max-width: none;
+    padding: 0;
+    margin: 0;
+  }
+  .report {
+    margin-top: 0;
+  }
+  .theme {
+    break-inside: avoid;
+  }
+  .radar-glyph .sweep {
+    animation: none;
+  }
+  a {
+    color: var(--muted);
+  }
+  .print-only {
+    display: block;
+  }
+  .print-credit {
+    margin-top: 2rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+}

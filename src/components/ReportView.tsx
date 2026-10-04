@@ -1,7 +1,7 @@
 import type { Report } from "../types";
 import { RadarGlyph } from "./RadarGlyph";
 import { safeHttpsUrl } from "../lib/text";
-import { downloadFile, reportToMarkdown, slugify } from "../lib/export";
+import { downloadFile, printReport, reportToMarkdown, slugify } from "../lib/export";
 
 interface Props {
   report: Report;
@@ -36,6 +36,9 @@ export function ReportView({ report, isSample }: Props) {
             onClick={() => downloadFile(`${base}.json`, JSON.stringify(report, null, 2), "application/json")}
           >
             Download JSON
+          </button>
+          <button type="button" className="btn-quiet" onClick={() => printReport(base)}>
+            Download PDF
           </button>
         </div>
       </header>
@@ -77,6 +80,8 @@ export function ReportView({ report, isSample }: Props) {
           ))}
         </ol>
       )}
+
+      <p className="print-only print-credit">Generated with Pain Point Radar, pain-point-radar-delta.vercel.app</p>
     </section>
   );
 }

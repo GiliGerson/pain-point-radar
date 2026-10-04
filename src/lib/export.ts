@@ -32,3 +32,15 @@ export function downloadFile(filename: string, content: string, type: string): v
 export function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "report";
 }
+
+/**
+ * Opens the browser's print dialog, where "Save as PDF" produces the PDF.
+ * No PDF library needed; the print stylesheet in styles.css lays out the report.
+ * The title is swapped while printing because browsers use it as the default file name.
+ */
+export function printReport(filename: string, win: Window = window): void {
+  const previous = win.document.title;
+  win.document.title = filename;
+  win.addEventListener("afterprint", () => (win.document.title = previous), { once: true });
+  win.print();
+}
