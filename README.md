@@ -62,6 +62,8 @@ npm test          # unit tests with recorded fixtures, no network
 npm run build     # type check and production build into dist/
 ```
 
+`npm run dev` serves the app only, so locally you need your own key. The free demo is a Vercel Function (`api/claude.ts`); to run it locally, use `vercel dev` with `ANTHROPIC_API_KEY` set in your environment. When you deploy your own copy, set `ANTHROPIC_API_KEY` as a Secret environment variable in Vercel and put a monthly spend limit on the Anthropic workspace that owns the key.
+
 ## Sample report
 
 If `public/demo-report.json` exists, the app shows it on first visit, so people can see a result without a key. To create one, run the app on a topic, click **Download JSON**, and save the file as `public/demo-report.json`.
