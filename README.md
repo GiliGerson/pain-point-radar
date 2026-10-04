@@ -4,7 +4,7 @@ Type a product or topic, and Pain Point Radar reads recent public discussion abo
 
 It runs entirely in the browser. There is no backend: you bring your own Anthropic API key, and it never leaves your tab except to call the Anthropic API.
 
-**Live demo:** _add your Vercel link here_
+**Live demo:** [pain-point-radar-delta.vercel.app](https://pain-point-radar-delta.vercel.app/)
 
 <!-- After your first real run, save a screenshot as docs/screenshot.png and replace this line with: ![Screenshot](docs/screenshot.png) -->
 
