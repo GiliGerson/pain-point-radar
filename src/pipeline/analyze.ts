@@ -111,9 +111,14 @@ export async function clusterPainPoints(
   const ppById = new Map(painPoints.map((p) => [p.id, p]));
   const itemById = new Map(items.map((it) => [it.id, it]));
 
+  // A pain point counts toward one theme only, the first one the model puts it in,
+  // so the same complaint cannot inflate several themes.
+  const assigned = new Set<string>();
   const themes: Theme[] = [];
   for (const t of out.themes) {
-    const members = [...new Set(t.painPointIds)].map((id) => ppById.get(id)).filter((p): p is PainPoint => !!p);
+    const ids = t.painPointIds.filter((id) => ppById.has(id) && !assigned.has(id));
+    ids.forEach((id) => assigned.add(id));
+    const members = [...new Set(ids)].map((id) => ppById.get(id)!);
     if (members.length === 0) continue;
 
     const itemIds = new Set(members.map((m) => m.itemId));

@@ -12,6 +12,7 @@ ${UNTRUSTED_RULE}
 
 Rules:
 - Only report a pain point if the author clearly experiences or describes it. Ignore praise, jokes, news and neutral questions.
+- The research topic is a specific product, tool or technology. Only report pain points about it. Search matches the word anywhere, so skip items that use it in another sense (for example "the notion of" when the topic is Notion), and skip complaints about other products that merely appear next to it.
 - "pain" is one short sentence in your own words, written from the user's perspective.
 - "quote" must be copied verbatim from that item's text, 5 to 40 words. Do not edit, fix or join it.
 - An item can have zero, one or several pain points.
@@ -23,7 +24,7 @@ export function buildExtractPrompt(topic: string, items: Item[]): string {
     .join("\n\n");
   return `Research topic: ${topic}
 
-Find pain points related to the research topic in these items.
+Find pain points about ${topic} itself in these items. Return nothing for items that are not about ${topic}.
 
 ${blocks}
 
@@ -40,7 +41,7 @@ Rules:
 - "title" is 3 to 8 words, specific, sentence case. Avoid vague titles like "General issues".
 - "summary" is 1 to 2 sentences explaining what users struggle with.
 - "severity" is 1 to 5: 5 means people are blocked, losing money or leaving; 1 means mild annoyance.
-- "painPointIds" lists every pain point id that belongs to the theme.
+- "painPointIds" lists every pain point id that belongs to the theme. Each id belongs to at most one theme.
 - Reply with JSON only, no prose and no code fences.`;
 
 export function buildClusterPrompt(topic: string, painPoints: PainPoint[]): string {

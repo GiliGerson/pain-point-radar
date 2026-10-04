@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createMockLLM } from "../llm/mock";
 import { analyze, clusterPainPoints, extractPainPoints } from "../pipeline/analyze";
 import { completeJson } from "../pipeline/json";
-import { buildExtractPrompt } from "../pipeline/prompts";
+import { buildExtractPrompt, EXTRACT_SYSTEM } from "../pipeline/prompts";
 import { estimateCost } from "../pipeline/cost";
 import { z } from "zod";
 import type { Item, PainPoint } from "../types";
@@ -37,6 +37,13 @@ describe("extractPainPoints", () => {
     expect(prompt).toContain('<untrusted id="hn:1">');
     expect(prompt).toContain("</untrusted>");
   });
+
+  it("asks only for pain points about the topic itself, not other senses of the word", () => {
+    const prompt = buildExtractPrompt("Notion", items.slice(0, 1));
+    expect(prompt).toContain("about Notion itself");
+    expect(EXTRACT_SYSTEM).toMatch(/another sense/);
+    expect(EXTRACT_SYSTEM).toMatch(/other products/);
+  });
 });
 
 describe("clusterPainPoints", () => {
@@ -61,6 +68,23 @@ describe("clusterPainPoints", () => {
     expect(themes[0].mentions).toBe(2);
     // hn:3 has a javascript: URL, so its quote must not be rendered as a link.
     expect(themes[0].quotes.map((q) => q.url)).toEqual(["https://news.ycombinator.com/item?id=1"]);
+  });
+
+  it("counts each pain point in one theme only", async () => {
+    const llm = createMockLLM([
+      JSON.stringify({
+        themes: [
+          { title: "Everything", summary: "s", severity: 2, painPointIds: ["p1", "p2"] },
+          { title: "Pricing again", summary: "s", severity: 3, painPointIds: ["p1"] },
+          { title: "Freeze again", summary: "s", severity: 3, painPointIds: ["p2", "p3"] },
+        ],
+      }),
+    ]);
+    const themes = await clusterPainPoints("figma", pps, items, llm);
+    expect(themes.map((t) => t.title).sort()).toEqual(["Everything", "Freeze again"]);
+    expect(themes.reduce((n, t) => n + t.mentions, 0)).toBe(3);
+    const quoted = themes.flatMap((t) => t.quotes.map((q) => q.text));
+    expect(new Set(quoted).size).toBe(quoted.length);
   });
 
   it("skips the model call when there is nothing to cluster", async () => {
