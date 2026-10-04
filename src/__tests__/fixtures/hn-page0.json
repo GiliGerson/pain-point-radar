@@ -1,0 +1,26 @@
+{
+  "nbPages": 2,
+  "hits": [
+    {
+      "objectID": "1001",
+      "author": "alice",
+      "created_at": "2026-09-20T10:00:00Z",
+      "story_title": "Ask HN: Figma alternatives?",
+      "comment_text": "The new pricing is brutal. We pay per editor now and our 12 person team &amp; contractors went from $150 to $540 a month.<p>Also dev mode keeps logging me out."
+    },
+    {
+      "objectID": "1002",
+      "author": "bob",
+      "created_at": "2026-09-21T10:00:00Z",
+      "title": "Show HN: I built a Figma plugin",
+      "story_text": null
+    },
+    {
+      "objectID": "1003",
+      "author": "carol",
+      "created_at": "2026-09-22T10:00:00Z",
+      "story_title": "Figma performance",
+      "comment_text": "Large files with more than 200 frames freeze my browser tab for 10 seconds every time I switch pages."
+    }
+  ]
+}

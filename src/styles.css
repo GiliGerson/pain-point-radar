@@ -1,0 +1,393 @@
+:root {
+  --fog: #eef2ef;
+  --paper: #f7f9f7;
+  --ink: #18302d;
+  --muted: #586b67;
+  --line: #c6d1cd;
+  --signal: #d9822b;
+  --signal-soft: #f2dcc3;
+  --danger: #a3402c;
+  --ui: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --voice: "Newsreader", Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fog: #0f1d1b;
+    --paper: #152623;
+    --ink: #e3ece9;
+    --muted: #93a7a2;
+    --line: #2c403c;
+    --signal: #e89a4a;
+    --signal-soft: #4a3420;
+    --danger: #e0846f;
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--fog);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+}
+
+.page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--line);
+}
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* Masthead */
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 3rem;
+}
+.brand {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.repo-link {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* The question is the hero: the topic field sits inside the sentence */
+.ask-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.3em;
+  font-size: clamp(1.8rem, 5.6vw, 3.1rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+.ask-tail {
+  white-space: nowrap;
+}
+.ask-line input {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--signal);
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid var(--line);
+  padding: 0;
+  width: 7.5ch;
+  min-width: 4ch;
+  field-sizing: content;
+}
+.ask-line input::placeholder {
+  color: var(--line);
+}
+.ask-line input:focus {
+  outline: none;
+  border-bottom-color: var(--signal);
+}
+
+.ask-intro {
+  color: var(--muted);
+  max-width: 36rem;
+  margin: 1.25rem 0 2rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.controls > label,
+.key-row > label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+select,
+.key-input input {
+  font: inherit;
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+}
+
+.sources {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.95rem;
+}
+.sources legend {
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 0.3rem;
+}
+.sources label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.sources .is-disabled {
+  color: var(--muted);
+}
+
+.key-row {
+  margin-bottom: 1.75rem;
+}
+.key-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  max-width: 30rem;
+}
+.key-input input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--ui);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+  margin: 0.35rem 0 0;
+}
+
+/* Buttons */
+button {
+  font: inherit;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--fog);
+  border: 0;
+  border-radius: 6px;
+  padding: 0.65rem 1.2rem;
+  font-weight: 600;
+}
+.btn-primary:disabled {
+  opacity: 0.4;
+}
+.btn-quiet {
+  background: none;
+  border: 0;
+  padding: 0.4rem 0;
+  color: var(--muted);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 0.2em;
+  font-size: 0.92rem;
+}
+.btn-quiet:hover {
+  color: var(--ink);
+}
+
+/* Status between form and report */
+.status {
+  margin-top: 2rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--paper);
+  border-left: 3px solid var(--signal);
+}
+.status p {
+  margin: 0 0 0.9rem;
+}
+.status-actions {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.status-error {
+  border-left-color: var(--danger);
+}
+.bar {
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+}
+.bar span {
+  display: block;
+  height: 100%;
+  background: var(--signal);
+  transition: width 0.4s ease;
+}
+
+/* Report */
+.report {
+  margin-top: 4rem;
+}
+.sample-note {
+  background: var(--signal-soft);
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  margin: 0 0 1.5rem;
+}
+.report-head h2 {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.5rem;
+}
+.report-meta {
+  color: var(--muted);
+  margin: 0;
+}
+.report-actions {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.themes {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0;
+}
+.theme {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 1.25rem;
+  padding: 1.75rem 0;
+  border-top: 1px solid var(--line);
+}
+.theme h3 {
+  font-size: 1.2rem;
+  line-height: 1.25;
+  margin: 0.15rem 0 0.2rem;
+}
+.theme-stats {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0 0 0.6rem;
+}
+.theme-summary {
+  margin: 0 0 1rem;
+}
+
+.quotes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+.quotes blockquote {
+  font-family: var(--voice);
+  font-style: italic;
+  font-size: 1.08rem;
+  line-height: 1.55;
+  margin: 0;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--signal-soft);
+}
+.quotes a {
+  display: inline-block;
+  margin: 0.2rem 0 0 0.9rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Radar glyph */
+.radar-glyph .ring {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+.radar-glyph .ring-on {
+  stroke: var(--signal);
+  stroke-width: 2.5;
+}
+.radar-glyph .sweep {
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0.35;
+  transform-origin: 28px 28px;
+  animation: sweep 6s linear infinite;
+}
+.radar-glyph .blip {
+  fill: var(--ink);
+}
+@keyframes sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .radar-glyph .sweep {
+    animation: none;
+  }
+  .bar span {
+    transition: none;
+  }
+}
+
+.empty {
+  color: var(--muted);
+  margin-top: 2rem;
+}
+
+.foot {
+  margin-top: 5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .theme {
+    grid-template-columns: 40px 1fr;
+    gap: 0.9rem;
+  }
+  .radar-glyph {
+    width: 40px;
+    height: 40px;
+  }
+}
