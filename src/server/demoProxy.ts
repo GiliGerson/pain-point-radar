@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { CLUSTER_MODEL, DEMO_MAX_TOKENS, DEMO_MAX_PROMPT_CHARS, EXTRACT_MODEL } from "../pipeline/config";
-import { CLUSTER_SYSTEM, EXTRACT_SYSTEM } from "../pipeline/prompts";
+import { CLUSTER_MODEL, DEMO_MAX_TOKENS, DEMO_MAX_PROMPT_CHARS, EXTRACT_MODEL } from "../pipeline/config.js";
+import { CLUSTER_SYSTEM, EXTRACT_SYSTEM } from "../pipeline/prompts.js";
 
 /**
  * The demo proxy lets visitors without a key run a small analysis on the owner's key.

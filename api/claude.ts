@@ -1,5 +1,5 @@
-import { handleDemoRequest, RateLimiter } from "../src/server/demoProxy";
-import { DEMO_CALLS_PER_DAY, DEMO_CALLS_PER_VISITOR_PER_HOUR } from "../src/pipeline/config";
+import { handleDemoRequest, RateLimiter } from "../src/server/demoProxy.js";
+import { DEMO_CALLS_PER_DAY, DEMO_CALLS_PER_VISITOR_PER_HOUR } from "../src/pipeline/config.js";
 
 declare const process: { env: Record<string, string | undefined> };
 
