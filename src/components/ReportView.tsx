@@ -24,7 +24,7 @@ export function ReportView({ report, isSample }: Props) {
       <header className="report-head">
         <h2 id="report-title">What people struggle with in {report.topic}</h2>
         <p className="report-meta">
-          {report.themes.length} {report.themes.length === 1 ? "theme" : "themes"} from {report.itemsAnalyzed} posts and comments on{" "}
+          {report.themes.length} {report.themes.length === 1 ? "theme" : "themes"} from {report.itemsAnalyzed} posts, issues and reviews from{" "}
           {report.sources.join(", ")} over the last {report.days} days, generated {date}.
         </p>
         <div className="report-actions">

@@ -8,7 +8,7 @@ export function reportToMarkdown(r: Report): string {
   const lines = [
     `# Pain points: ${mdEscape(r.topic)}`,
     "",
-    `${r.itemsAnalyzed} posts and comments from ${r.sources.join(", ")}, last ${r.days} days. Generated ${new Date(r.generatedAt).toLocaleDateString("en-GB")}.`,
+    `${r.itemsAnalyzed} posts, issues and reviews from ${r.sources.join(", ")}, last ${r.days} days. Generated ${new Date(r.generatedAt).toLocaleDateString("en-GB")}.`,
     "",
   ];
   r.themes.forEach((t, i) => {
